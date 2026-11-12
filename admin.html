@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة تحكم Horus Handmade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- شاشة تسجيل الدخول -->
+  <section id="loginSection" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-header">
+        <i class="fas fa-crown"></i>
+        <h1>Horus Handmade</h1>
+        <p>لوحة إدارة المتجر والمنتجات</p>
+      </div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="adminEmail" placeholder="admin3@horushandmade.com" required />
+        </div>
+        <div class="form-group">
+          <label>كلمة المرور</label>
+          <input type="password" id="adminPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" id="loginBtn" class="btn btn-primary full-width">
+          <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+        </button>
+        <p id="loginError" class="error-msg"></p>
+      </form>
+      <a href="index.html" class="back-store-link"><i class="fas fa-arrow-right"></i> العودة للمتجر</a>
+    </div>
+  </section>
+
+  <!-- لوحة التحكم الرئيسية (تظهر فقط بعد تسجيل الدخول) -->
+  <div id="dashboardSection" class="dashboard-wrapper" style="display: none;">
+    <header class="admin-topbar">
+      <div class="container topbar-inner">
+        <div class="brand-title">
+          <i class="fas fa-gem"></i>
+          <span>لوحة تحكم <strong>Horus Handmade</strong></span>
+        </div>
+        <div class="topbar-actions">
+          <a href="index.html" target="_blank" class="btn btn-outline btn-sm">
+            <i class="fas fa-external-link-alt"></i> معاينة المتجر
+          </a>
+          <button id="logoutBtn" class="btn btn-dark btn-sm">
+            <i class="fas fa-sign-out-alt"></i> خروج
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container admin-main">
+      <!-- إحصائيات سريعة -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <i class="fas fa-shopping-bag"></i>
+          <div>
+            <strong id="totalProductsCount">0</strong>
+            <span>إجمالي الشنط</span>
+          </div>
+        </div>
+        <div class="stat-box">
+          <i class="fas fa-layer-group"></i>
+          <div>
+            <strong id="totalCategoriesCount">0</strong>
+            <span>عدد الأقسام</span>
+          </div>
+        </div>
+        <div class="stat-box">
+          <i class="fas fa-check-circle"></i>
+          <div>
+            <strong id="inStockCount">0</strong>
+            <span>متاح للبيع</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- أزرار التبديل بين المنتجات والأقسام -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="productsTab">
+          <i class="fas fa-shopping-bag"></i> إدارة الشنط (المنتجات)
+        </button>
+        <button class="admin-tab" data-tab="categoriesTab">
+          <i class="fas fa-folder-open"></i> إدارة الأقسام (الكوليكشنز)
+        </button>
+      </div>
+
+      <!-- تبويب المنتجات -->
+      <section id="productsTab" class="tab-panel active">
+        <div class="panel-header">
+          <h2>قائمة الشنط</h2>
+          <button id="openAddProductBtn" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة شنطة جديدة
+          </button>
+        </div>
+
+        <div class="filter-bar">
+          <input type="text" id="adminSearchInput" placeholder="ابحثي باسم الشنطة أو اللون..." />
+          <select id="adminCategoryFilter">
+            <option value="all">كل الأقسام</option>
+          </select>
+        </div>
+
+        <div id="adminProductsGrid" class="admin-products-grid"></div>
+      </section>
+
+      <!-- تبويب الأقسام -->
+      <section id="categoriesTab" class="tab-panel">
+        <div class="panel-header">
+          <h2>أقسام المتجر</h2>
+          <button id="openAddCategoryBtn" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة قسم جديد
+          </button>
+        </div>
+        <div id="adminCategoriesList" class="admin-categories-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- نافذة إضافة / تعديل شنطة -->
+  <div id="productFormModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="productModalTitle">إضافة شنطة جديدة</h3>
+        <button type="button" class="close-btn" onclick="closeProductModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="productForm" class="modal-form">
+        <input type="hidden" id="editProductId" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>اسم الشنطة *</label>
+            <input type="text" id="prodName" placeholder="مثال: شنطة حتشبسوت - الطموح" required />
+          </div>
+          <div class="form-group">
+            <label>القسم (الكوليكشن) *</label>
+            <select id="prodCategory" required></select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>السعر (ج.م) *</label>
+            <input type="number" id="prodPrice" placeholder="750" min="1" required />
+          </div>
+          <div class="form-group">
+            <label>اللون / الألوان</label>
+            <input type="text" id="prodColor" placeholder="مثال: أسود × ألوان ملكية" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>الشارة (Badge)</label>
+            <input type="text" id="prodBadge" placeholder="مثال: الأكثر طلباً / جديد" />
+          </div>
+          <div class="form-group">
+            <label>حالة التوفر</label>
+            <select id="prodStock">
+              <option value="true">متاح للبيع (In Stock)</option>
+              <option value="false">نفدت الكمية (Out of Stock)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>وصف الشنطة</label>
+          <textarea id="prodDesc" rows="3" placeholder="اكتبي تفاصيل الخامة والمقاس والمميزات..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>صور الشنطة (يمكنك اختيار صورة واحدة أو أكثر)</label>
+          <input type="file" id="prodImagesInput" accept="image/*" multiple class="file-input" />
+          <div id="existingImagesPreview" class="images-preview-grid"></div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeProductModal()">إلغاء</button>
+          <button type="submit" id="saveProductBtn" class="btn btn-primary">
+            <i class="fas fa-save"></i> حفظ الشنطة
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- نافذة إضافة / تعديل قسم -->
+  <div id="categoryFormModal" class="modal-overlay">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3 id="categoryModalTitle">إضافة قسم جديد</h3>
+        <button type="button" class="close-btn" onclick="closeCategoryModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <form id="categoryForm" class="modal-form">
+        <input type="hidden" id="editCategoryId" />
+
+        <div class="form-group">
+          <label>اسم القسم *</label>
+          <input type="text" id="catTitle" placeholder="مثال: كوليكشن الشتاء (Winter Collection)" required />
+        </div>
+
+        <div class="form-group">
+          <label>وصف مختصر للقسم</label>
+          <input type="text" id="catSubtitle" placeholder="وصف يظهر تحت عنوان القسم" />
+        </div>
+
+        <div class="form-group">
+          <label>ترتيب الظهور (رقم)</label>
+          <input type="number" id="catOrder" value="1" min="1" />
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeCategoryModal()">إلغاء</button>
+          <button type="submit" id="saveCategoryBtn" class="btn btn-primary">
+            <i class="fas fa-save"></i> حفظ القسم
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- إشعار Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

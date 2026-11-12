@@ -1090,3 +1090,57 @@ body {
     font-size: 2.1rem;
   }
 }
+/* Out of Stock & Multi-Image Gallery Additions */
+.product-card.out-of-stock .product-img-wrap img {
+  filter: grayscale(65%);
+  opacity: 0.8;
+}
+
+.stock-badge-out {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #2b1d14;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.btn-cart:disabled {
+  background: #e5ded7;
+  color: #8c7d73;
+  cursor: not-allowed;
+}
+
+.modal-img-col {
+  display: flex;
+  flex-direction: column;
+  background: var(--sand-light);
+}
+
+.modal-thumbs {
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  overflow-x: auto;
+  justify-content: center;
+  background: var(--white);
+  border-top: 1px solid #eee;
+}
+
+.modal-thumbs img {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: var(--transition);
+}
+
+.modal-thumbs img.active,
+.modal-thumbs img:hover {
+  border-color: var(--crimson);
+}
