@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horus handmade | شنط هاند ميد مصنوعة بحب</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    <span>✨ MADE WITH LOVE • شغل يدوي مصري 100% بخامات عالية الجودة وتوصيل لجميع المحافظات ✨</span>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#home" class="brand-logo">
+        <img src="images/WhatsApp Image 2026-11-12 at 11.09.28 AM.jpeg" alt="Horus handmade Logo" />
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#home" class="active">الرئيسية</a>
+        <a href="#collections">الكوليكشنز</a>
+        <a href="#queens">ملكات مصر</a>
+        <a href="#reviews">آراء عملائنا</a>
+        <a href="#contact">تواصلي معنا</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://www.instagram.com/horushandmade.eg?srtk=MTExbHI3bnRqdmQ2Ng==" target="_blank" aria-label="Instagram" class="social-icon">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://www.facebook.com/share/19mFugt2X2/" target="_blank" aria-label="Facebook" class="social-icon">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+        <button class="cart-btn" id="openCartBtn" aria-label="سلة المشتريات">
+          <i class="fas fa-shopping-bag"></i>
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <span class="hero-badge">HORUS HANDMADE • MADE WITH LOVE ❤️</span>
+        <h1>كل قطعة بتحكي حكاية <span class="highlight">أنوثة وأصالة</span></h1>
+        <p>
+          اكتشفي تشكيلة شنط الكروشيه والهاند ميد المصنوعة يدوياً بكل حب ودقة. تصميمات تجمع بين سحر التراث المصري وأناقة الصيف العصرية لتكمل حضورك في كل مكان.
+        </p>
+        <div class="hero-btns">
+          <a href="#collections" class="btn btn-primary">استكشفي الكوليكشنز</a>
+          <a href="#queens" class="btn btn-outline">كوليكشن ملكات مصر</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat">
+            <strong>100%</strong>
+            <span>صناعة يدوية</span>
+          </div>
+          <div class="stat">
+            <strong>6</strong>
+            <span>كوليكشنز حصرية</span>
+          </div>
+          <div class="stat">
+            <strong>+500</strong>
+            <span>عميلة سعيدة</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-img-card main-card">
+          <img src="images/WhatsApp Image 2026-11-11 at 11.35.45 PM.jpeg" alt="كوليكشن ملكات مصر" />
+          <div class="img-caption">كوليكشن ملكات مصر • إصدار خاص</div>
+        </div>
+        <div class="hero-img-card sub-card">
+          <img src="images/WhatsApp Image 2026-11-11 at 11.35.51 PM_2.jpeg" alt="Tiye Bucket Bag Collection" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Collections & Products Section -->
+  <section class="collections-section" id="collections">
+    <div class="container">
+      <div class="section-header">
+        <span class="sub-title">تشكيلتنا المختارة بعناية</span>
+        <h2>الكوليكشنز والشنط</h2>
+        <p>اختاري الكوليكشن المفضل ليكي، وتصفحي الأسعار والتفاصيل واطلبي مباشرة عبر واتساب</p>
+      </div>
+
+      <!-- Search & Filter Controls -->
+      <div class="controls-bar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="ابحثي باسم الشنطة أو اللون أو الكوليكشن..." />
+        </div>
+
+        <div class="collection-tabs" id="collectionTabs">
+          <button class="tab-btn active" data-category="all">الكل</button>
+          <button class="tab-btn" data-category="queens">كوليكشن ملكات مصر</button>
+          <button class="tab-btn" data-category="coastal">لمسة بحرية (Coastal)</button>
+          <button class="tab-btn" data-category="tote">توت آرت (Art Totes)</button>
+          <button class="tab-btn" data-category="boho">بوهو شيك (Boho & Tiye)</button>
+          <button class="tab-btn" data-category="classic">كلاسيك وميني كروس</button>
+        </div>
+      </div>
+
+      <!-- Dynamic Collections Container -->
+      <div id="collectionsContainer"></div>
+    </div>
+  </section>
+
+  <!-- Royal Queens Spotlight Banner -->
+  <section class="queens-banner" id="queens">
+    <div class="container queens-grid">
+      <div class="queens-text">
+        <span class="badge-gold">ROYAL EGYPTIAN EDITION</span>
+        <h2>كل واحدة فينا بتشبه ملكة مصرية.. تفتكري أنتِ مين؟</h2>
+        <p>
+          استلهمنا 4 تصميمات استثنائية من روح أشهر ملكات مصر القديمة: طموح <strong>حتشبسوت</strong>، جمال <strong>نفرتيتي</strong>، حكمة <strong>إيزيس</strong>، وبهجة <strong>هاتحور</strong>.
+        </p>
+        <ul class="queens-list">
+          <li><i class="fas fa-crown"></i> <strong>حتشبسوت:</strong> شنطة توت سوداء بتفاصيل ملونة تعكس القوة والطموح.</li>
+          <li><i class="fas fa-crown"></i> <strong>نفرتيتي:</strong> تصميم شبكي كحلي لامع يخطف الأنظار.</li>
+          <li><i class="fas fa-crown"></i> <strong>إيزيس:</strong> دائرية زيتي بتفاصيل ماندالا وشراشيب يدوية.</li>
+          <li><i class="fas fa-crown"></i> <strong>هاتحور:</strong> شنطة ذهبية دائرية بمقبض أنيق تعبر عن الفرح والحب.</li>
+        </ul>
+        <button class="btn btn-primary" onclick="filterByCategory('queens')">تسوقي كوليكشن الملكات</button>
+      </div>
+      <div class="queens-gallery">
+        <img src="images/WhatsApp Image 2026-11-11 at 11.35.43 PM (1).jpeg" alt="حتشبسوت" />
+        <img src="images/WhatsApp Image 2026-11-11 at 11.35.43 PM (2).jpeg" alt="نفرتيتي" />
+        <img src="images/WhatsApp Image 2026-11-11 at 11.35.43 PM (3).jpeg" alt="إيزيس" />
+        <img src="images/WhatsApp Image 2026-11-11 at 11.35.46 PM (1).jpeg" alt="هاتحور" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Client Reviews Section -->
+  <section class="reviews-section" id="reviews">
+    <div class="container">
+      <div class="section-header">
+        <span class="sub-title">ثقة عملائنا سر نجاحنا</span>
+        <h2>آراء عملاء Horus handmade</h2>
+        <p>تجارب حقيقية لعميلاتنا بعد استلام الأوردر</p>
+      </div>
+
+      <div class="reviews-grid">
+        <div class="review-card">
+          <img src="images/WhatsApp Image 2026-11-11 at 11.35.50 PM (2).jpeg" alt="رأي عميلة 1" />
+        </div>
+        <div class="review-card">
+          <img src="images/WhatsApp Image 2026-11-11 at 11.35.50 PM (1).jpeg" alt="رأي عميلة 2" />
+        </div>
+        <div class="review-card">
+          <img src="images/WhatsApp Image 2026-11-11 at 11.35.50 PM.jpeg" alt="رأي عميلة 3" />
+        </div>
+        <div class="review-card">
+          <img src="images/WhatsApp Image 2026-11-11 at 11.35.49 PM (1).jpeg" alt="رأي عميلة 4" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer" id="contact">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <img src="images/WhatsApp Image 2026-11-12 at 11.09.28 AM.jpeg" alt="Horus handmade" class="footer-logo" />
+        <p>
+          براند مصري متخصص في تصميم وتنفيذ شنط الهاند ميد والكروشيه بخامات عالية الجودة وتفاصيل مصنوعة بكل حب.
+        </p>
+        <div class="footer-socials">
+          <a href="https://www.instagram.com/horushandmade.eg?srtk=MTExbHI3bnRqdmQ2Ng==" target="_blank"><i class="fab fa-instagram"></i></a>
+          <a href="https://www.facebook.com/share/19mFugt2X2/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+          <a href="https://wa.me/201128863731" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <h3>روابط سريعة</h3>
+        <ul>
+          <li><a href="#home">الرئيسية</a></li>
+          <li><a href="#collections">جميع الكوليكشنز</a></li>
+          <li><a href="#queens">كوليكشن ملكات مصر</a></li>
+          <li><a href="#reviews">آراء العملاء</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-contact">
+        <h3>للطلب والاستفسار</h3>
+        <p><i class="fab fa-whatsapp"></i> واتساب: <a href="https://wa.me/201128863731" target="_blank" dir="ltr">+20 112 886 3731</a></p>
+        <p><i class="fas fa-truck"></i> شحن سريع لجميع محافظات مصر</p>
+        <p><i class="fas fa-heart"></i> إمكانية تنفيذ ألوان خاصة حسب الطلب</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Horus handmade — Made With Love. جميع الحقوق محفوظة.</p>
+    </div>
+  </footer>
+
+  <!-- Floating WhatsApp Button -->
+  <a href="https://wa.me/201128863731?text=%D8%A3%D9%87%D9%84%D8%A7%D9%8B%20Horus%20handmade%D8%8C%20%D8%AD%D8%A7%D8%A8%D8%A9%20%D8%A3%D8%B3%D8%AA%D9%81%D8%B3%D8%B1%20%D8%B9%D9%86%20%D8%B4%D9%86%D8%B7%D8%A9" target="_blank" class="floating-wa" aria-label="تواصلي واتساب">
+    <i class="fab fa-whatsapp"></i>
+    <span>اطلبي واتساب</span>
+  </a>
+
+  <!-- Product Quick View Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-box">
+      <button class="close-modal" id="closeModalBtn"><i class="fas fa-times"></i></button>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3><i class="fas fa-shopping-bag"></i> سلة طلباتك</h3>
+      <button class="close-cart" id="closeCartBtn"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="cart-items" id="cartItems">
+      <p class="empty-cart-msg">السلة فارغة حالياً.. اختاري شنطتك المفضلة!</p>
+    </div>
+
+    <div class="cart-footer">
+      <div class="shipping-form">
+        <h4>بيانات التوصيل (اختياري)</h4>
+        <input type="text" id="custName" placeholder="الاسم بالكامل" />
+        <input type="text" id="custGov" placeholder="المحافظة (مثلاً: القاهرة، الجيزة، الإسكندرية)" />
+        <input type="text" id="custAddress" placeholder="العنوان بالتفصيل" />
+      </div>
+
+      <div class="cart-total">
+        <span>الإجمالي:</span>
+        <strong id="cartTotal">0 ج.م</strong>
+      </div>
+
+      <button class="btn btn-whatsapp-full" id="checkoutWaBtn">
+        <i class="fab fa-whatsapp"></i> إرسال الأوردر عبر واتساب
+      </button>
+    </div>
+  </aside>
+
+  <script src="script.js"></script>
+</body>
+</html>
