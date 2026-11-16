@@ -1,4 +1,4 @@
-const WHATSAPP_NUMBER = "201128863731";
+const WHATSAPP_NUMBER = "201224001449";
 
 let collectionsData = [];
 let cart = [];
