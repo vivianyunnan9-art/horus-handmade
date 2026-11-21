@@ -9,12 +9,26 @@ const collectionsContainer = document.getElementById("collectionsContainer");
 const collectionTabsContainer = document.getElementById("collectionTabs");
 const searchInput = document.getElementById("searchInput");
 
-// جلب الأقسام والمنتجات من Supabase عند فتح الموقع
+// استخراج الاسم الأساسي للشنطة لتجميع الألوان المتشابهة في كارت واحد
+function getBaseBagName(fullName) {
+  let clean = fullName.replace(/\s*\([^)]*\)\s*$/g, "").trim();
+  if (clean.includes("صدفة البحر")) {
+    return "شنطة صدفة البحر ونجمة البحر";
+  }
+  if (clean.startsWith("توت ")) {
+    return "توت آرت هاند ميد (أشكال متعددة)";
+  }
+  return clean;
+}
+
+// =========================================
+// 1. تحميل الأقسام والشنط وتجميع المتشابه منها
+// =========================================
 async function loadStoreData() {
   collectionsContainer.innerHTML = `
-    <div style="text-align:center; padding:50px; color:var(--brown-mid);">
-      <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--crimson); margin-bottom:10px;"></i>
-      <p>جاري تحميل الكوليكشنز...</p>
+    <div style="text-align:center; padding:50px; color:var(--brown-deep);">
+      <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--terracotta); margin-bottom:10px;"></i>
+      <p>جاري تحميل الكوليكشن...</p>
     </div>
   `;
 
@@ -30,69 +44,97 @@ async function loadStoreData() {
     const categories = catRes.data || [];
     const products = prodRes.data || [];
 
-    // ربط المنتجات بكل قسم بنفس الهيكل الأصلي
-    collectionsData = categories.map((cat) => ({
-      id: cat.slug,
-      dbId: cat.id,
-      title: cat.title,
-      subtitle: cat.subtitle || "",
-      products: products
-        .filter((p) => p.category_id === cat.id)
-        .map((p) => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          color: p.color || "",
-          badge: p.badge || "",
-          images: Array.isArray(p.images) && p.images.length > 0 ? p.images : ["images/WhatsApp Image 2026-11-12 at 11.09.28 AM.jpeg"],
-          image: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : "images/WhatsApp Image 2026-11-12 at 11.09.28 AM.jpeg",
-          desc: p.description || "",
-          inStock: p.in_stock !== false
-        }))
-    }));
+    collectionsData = categories.map((cat) => {
+      const rawProducts = products.filter((p) => p.category_id === cat.id);
+      const groupedMap = new Map();
 
-    renderCategoryTabs();
+      rawProducts.forEach((p) => {
+        const baseName = getBaseBagName(p.name);
+        const groupKey = `${baseName}_${p.price}`;
+        const pImages = Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/300"];
+
+        if (!groupedMap.has(groupKey)) {
+          groupedMap.set(groupKey, {
+            id: p.id,
+            name: baseName,
+            price: Number(p.price),
+            colorsList: p.color ? [p.color] : [],
+            badge: p.badge || "",
+            inStock: p.in_stock,
+            desc: p.description || "",
+            images: [...pImages]
+          });
+        } else {
+          const existing = groupedMap.get(groupKey);
+          pImages.forEach((img) => {
+            if (!existing.images.includes(img)) existing.images.push(img);
+          });
+          if (p.color && !existing.colorsList.includes(p.color)) {
+            existing.colorsList.push(p.color);
+          }
+          if (p.in_stock) existing.inStock = true;
+        }
+      });
+
+      const mergedProducts = Array.from(groupedMap.values()).map((item) => ({
+        ...item,
+        color: item.colorsList.join(" / ") || "ألوان متعددة"
+      }));
+
+      return {
+        id: cat.slug,
+        dbId: cat.id,
+        title: cat.title,
+        subtitle: cat.subtitle || "",
+        products: mergedProducts
+      };
+    });
+
+    renderTabs();
     renderCollections();
   } catch (err) {
     console.error("Error loading store data:", err);
     collectionsContainer.innerHTML = `
-      <p style="text-align:center; padding:40px; color:var(--crimson);">
-        حدث خطأ أثناء تحميل المنتجات. يرجى تحديث الصفحة.
-      </p>
+      <div style="text-align:center; padding:40px; color:var(--brown-deep);">
+        <p>تعذر تحميل المنتجات حالياً، يرجى تحديث الصفحة.</p>
+      </div>
     `;
   }
 }
 
-// توليد أزرار الأقسام ديناميكياً
-function renderCategoryTabs() {
-  if (!collectionTabsContainer) return;
-
-  let tabsHTML = `<button class="tab-btn ${currentCategory === "all" ? "active" : ""}" data-category="all">الكل</button>`;
+// =========================================
+// 2. رسم أزرار الأقسام
+// =========================================
+function renderTabs() {
+  collectionTabsContainer.innerHTML = `<button class="tab-btn ${currentCategory === "all" ? "active" : ""}" data-category="all">الكل</button>`;
   collectionsData.forEach((col) => {
-    tabsHTML += `<button class="tab-btn ${currentCategory === col.id ? "active" : ""}" data-category="${col.id}">${col.title}</button>`;
+    const btn = document.createElement("button");
+    btn.className = `tab-btn ${currentCategory === col.id ? "active" : ""}`;
+    btn.dataset.category = col.id;
+    btn.textContent = col.title;
+    collectionTabsContainer.appendChild(btn);
   });
 
-  collectionTabsContainer.innerHTML = tabsHTML;
-
-  document.querySelectorAll(".tab-btn").forEach((btn) => {
+  collectionTabsContainer.querySelectorAll(".tab-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
       currentCategory = btn.dataset.category;
+      renderTabs();
       renderCollections();
     });
   });
 }
 
-// عرض الأقسام والمنتجات بنفس التصميم الأصلي
+// =========================================
+// 3. عرض الكروت المجمعة + السلايدر والنقط
+// =========================================
 function renderCollections() {
   collectionsContainer.innerHTML = "";
 
   collectionsData.forEach((collection) => {
     if (currentCategory !== "all" && collection.id !== currentCategory) return;
 
+    const q = searchQuery.trim().toLowerCase();
     const filteredProducts = collection.products.filter((product) => {
-      const q = searchQuery.trim().toLowerCase();
       if (!q) return true;
       return (
         product.name.toLowerCase().includes(q) ||
@@ -104,7 +146,7 @@ function renderCollections() {
 
     if (filteredProducts.length === 0) return;
 
-    const block = document.createElement("div");
+    const block = document.createElement("section");
     block.className = "collection-block";
 
     block.innerHTML = `
@@ -112,40 +154,55 @@ function renderCollections() {
         <h3>${collection.title}</h3>
         <span class="collection-subtitle">${collection.subtitle}</span>
       </div>
-      <div class="products-grid">
+      <div class="products-grid-fixed">
         ${filteredProducts
-          .map(
-            (p) => `
-          <div class="product-card ${!p.inStock ? "out-of-stock" : ""}">
-            <div class="product-img-wrap" onclick="openQuickView('${p.id}')">
-              <img src="${p.image}" alt="${p.name}" loading="lazy" />
-              ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ""}
-              ${!p.inStock ? `<span class="stock-badge-out">نفدت الكمية</span>` : ""}
-              <button class="quick-view-btn" title="معاينة سريعة"><i class="fas fa-eye"></i></button>
-            </div>
-            <div class="product-info">
-              <h4>${p.name}</h4>
-              <p class="product-desc">${p.desc}</p>
-              <div class="product-meta">
-                <span class="product-price">${p.price} ج.م</span>
-                ${p.color ? `<span class="product-color">${p.color}</span>` : ""}
-              </div>
-              <div class="product-actions">
-                <button class="btn-cart" onclick="addToCart('${p.id}')" ${!p.inStock ? "disabled" : ""}>
-                  <i class="fas fa-plus"></i> ${p.inStock ? "أضيفي للسلة" : "غير متاح"}
-                </button>
-                <a class="btn-wa-direct" href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-                  p.inStock
-                    ? `أهلاً Horus handmade ❤️، حابة أطلب شنطة:\nالموديل: ${p.name}\nاللون: ${p.color}\nالسعر: ${p.price} ج.م`
-                    : `أهلاً Horus handmade ❤️، حابة أستفسر عن إمكانية تنفيذ شنطة (${p.name}) بالطلب`
-                )}" target="_blank">
-                  <i class="fab fa-whatsapp"></i> ${p.inStock ? "اطلبي الآن" : "اطلبي تنفيذها"}
-                </a>
-              </div>
-            </div>
-          </div>
-        `
-          )
+          .map((p) => {
+            const imagesHTML = p.images
+              .map(
+                (imgUrl) =>
+                  `<img src="${imgUrl}" alt="${p.name}" loading="lazy" onclick="openQuickView('${p.id}')" />`
+              )
+              .join("");
+
+            const dotsHTML = `<div class="slider-dots" id="dots-${p.id}">
+              ${p.images
+                .map(
+                  (_, idx) =>
+                    `<span class="${idx === 0 ? "active" : ""}" onclick="goToSlide('${p.id}', ${idx})"></span>`
+                )
+                .join("")}
+            </div>`;
+
+            const waText = encodeURIComponent(
+              `أهلاً Horus handmade ❤️، حابة أطلب شنطة:\n• الموديل: ${p.name}\n• السعر: ${p.price} ج.م`
+            );
+
+            return `
+              <article class="product-card">
+                <div class="product-img-wrap">
+                  <div class="card-slider-container" id="slider-${p.id}" onscroll="updateDots('${p.id}', this)">
+                    ${imagesHTML}
+                  </div>
+                  ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ""}
+                  ${!p.inStock ? `<span class="stock-badge-out">نفدت الكمية</span>` : ""}
+                </div>
+                ${dotsHTML}
+                <div class="product-info">
+                  <h4 class="product-name" title="${p.name}">${p.name}</h4>
+                  <span class="product-color-text" title="${p.color}">${p.color}</span>
+                  <div class="product-price">${p.price} ج.م</div>
+                  <div class="product-actions">
+                    <button class="btn-add-cart" onclick="addToCart('${p.id}')" ${!p.inStock ? "disabled" : ""}>
+                      ${p.inStock ? "أضيفي للسلة" : "غير متاح"}
+                    </button>
+                    <a class="btn-wa-mini" href="https://wa.me/${WHATSAPP_NUMBER}?text=${waText}" target="_blank" aria-label="طلب واتساب">
+                      <i class="fab fa-whatsapp"></i>
+                    </a>
+                  </div>
+                </div>
+              </article>
+            `;
+          })
           .join("")}
       </div>
     `;
@@ -154,207 +211,211 @@ function renderCollections() {
   });
 
   if (collectionsContainer.innerHTML === "") {
-    collectionsContainer.innerHTML = `<p style="text-align:center; padding:40px; color:#6e5d53;">لا توجد شنط مطابقة لبحثك.. جربي كلمة أخرى!</p>`;
+    collectionsContainer.innerHTML = `
+      <div style="text-align:center; padding:40px; color:var(--text-muted);">
+        لا توجد شنط مطابقة لبحثك حالياً.
+      </div>
+    `;
   }
+}
+
+function updateDots(productId, sliderEl) {
+  const dotsContainer = document.getElementById(`dots-${productId}`);
+  if (!dotsContainer) return;
+
+  const index = Math.round(sliderEl.scrollLeft / sliderEl.clientWidth);
+  const dots = dotsContainer.querySelectorAll("span");
+
+  dots.forEach((dot, idx) => {
+    dot.classList.toggle("active", idx === index);
+  });
+}
+
+function goToSlide(productId, index) {
+  const sliderEl = document.getElementById(`slider-${productId}`);
+  if (!sliderEl) return;
+  sliderEl.scrollTo({
+    left: index * sliderEl.clientWidth,
+    behavior: "smooth"
+  });
 }
 
 function findProductById(id) {
   for (const col of collectionsData) {
-    const found = col.products.find((p) => p.id === id);
+    const found = col.products.find((p) => String(p.id) === String(id));
     if (found) return found;
   }
   return null;
 }
 
-function filterByCategory(cat) {
-  currentCategory = cat;
-  document.querySelectorAll(".tab-btn").forEach((b) => {
-    b.classList.toggle("active", b.dataset.category === cat);
-  });
-  renderCollections();
-  document.getElementById("collections").scrollIntoView({ behavior: "smooth" });
-}
+// =========================================
+// 4. المعاينة السريعة (إظهار الصورة كاملة بدون قص)
+// =========================================
+const quickViewModal = document.getElementById("quickViewModal");
+const quickViewContent = document.getElementById("quickViewContent");
 
-searchInput.addEventListener("input", (e) => {
-  searchQuery = e.target.value;
-  renderCollections();
-});
-
-// Quick View Modal مع دعم الصور المتعددة
-const productModal = document.getElementById("productModal");
-const modalBody = document.getElementById("modalBody");
-const closeModalBtn = document.getElementById("closeModalBtn");
-
-function switchModalImage(src, thumbEl) {
-  const mainImg = document.getElementById("modalMainImage");
-  if (mainImg) mainImg.src = src;
-  document.querySelectorAll(".modal-thumbs img").forEach((el) => el.classList.remove("active"));
-  if (thumbEl) thumbEl.classList.add("active");
-}
-
-function openQuickView(id) {
-  const p = findProductById(id);
+function openQuickView(productId) {
+  const p = findProductById(productId);
   if (!p) return;
 
-  const thumbsHTML =
-    p.images.length > 1
-      ? `<div class="modal-thumbs">
-          ${p.images
-            .map(
-              (imgUrl, idx) =>
-                `<img src="${imgUrl}" class="${idx === 0 ? "active" : ""}" onclick="switchModalImage('${imgUrl}', this)" alt="صورة ${idx + 1}" />`
-            )
-            .join("")}
-        </div>`
-      : "";
+  const thumbsHTML = p.images
+    .map(
+      (img, i) =>
+        `<img src="${img}" style="width:56px; height:64px; object-fit:cover; border-radius:8px; cursor:pointer; border:2px solid ${
+          i === 0 ? "var(--brown-deep)" : "transparent"
+        };" onclick="document.getElementById('qvMainImg').src='${img}'" />`
+    )
+    .join("");
 
-  modalBody.innerHTML = `
-    <div class="modal-img-col">
-      <img id="modalMainImage" src="${p.image}" alt="${p.name}" />
-      ${thumbsHTML}
-    </div>
-    <div class="modal-details">
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
-        ${p.badge ? `<span class="hero-badge" style="margin:0;">${p.badge}</span>` : ""}
-        <span class="hero-badge" style="margin:0; background:${p.inStock ? "rgba(37, 211, 102, 0.15)" : "rgba(43, 29, 20, 0.1)"}; color:${p.inStock ? "#15803d" : "#2b1d14"};">
-          ${p.inStock ? "متوفر حالياً" : "نفدت الكمية (متاح تنفيذ بالطلب)"}
-        </span>
-      </div>
-      <h3 style="font-size:1.5rem; color:var(--brown-dark); margin-bottom:10px;">${p.name}</h3>
-      <p style="color:var(--text-muted); margin-bottom:15px;">${p.desc}</p>
-      ${p.color ? `<p style="margin-bottom:8px;"><strong>اللون:</strong> ${p.color}</p>` : ""}
-      <p style="font-size:1.4rem; font-weight:800; color:var(--crimson); margin-bottom:20px;">${p.price} ج.م</p>
-      <div style="display:flex; gap:10px; flex-direction:column;">
-        ${
-          p.inStock
-            ? `<button class="btn btn-primary" onclick="addToCart('${p.id}'); closeModal();">
-                <i class="fas fa-shopping-bag"></i> إضافة إلى سلة الطلبات
-              </button>`
-            : ""
-        }
-        <a class="btn btn-wa-direct" style="padding:12px; border-radius:30px;" href="https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-          `أهلاً Horus handmade ❤️، حابة أطلب شنطة:\nالموديل: ${p.name}\nالسعر: ${p.price} ج.م`
-        )}" target="_blank">
-          <i class="fab fa-whatsapp"></i> طلب مباشر عبر واتساب
-        </a>
-      </div>
-    </div>
+  quickViewContent.innerHTML = `
+    <img id="qvMainImg" src="${p.images[0]}" alt="${p.name}" style="width:100%; max-height:360px; object-fit:contain; background:#efe7dc; border-radius:12px; margin:10px 0;" />
+    ${p.images.length > 1 ? `<div style="display:flex; gap:8px; overflow-x:auto; margin-bottom:12px;">${thumbsHTML}</div>` : ""}
+    <h3 style="color:var(--brown-deep); font-size:1.2rem;">${p.name}</h3>
+    <p style="color:var(--text-muted); font-size:0.85rem; margin:4px 0;">${p.color}</p>
+    <p style="font-size:0.9rem; margin:8px 0;">${p.desc}</p>
+    <div style="font-size:1.15rem; font-weight:800; color:var(--brown-deep); margin:10px 0;">${p.price} ج.م</div>
+    <button class="btn-checkout-wa" onclick="addToCart('${p.id}'); closeQuickViewModal();" ${!p.inStock ? "disabled" : ""}>
+      ${p.inStock ? "أضيفي للسلة" : "نفدت الكمية"}
+    </button>
   `;
-  productModal.classList.add("active");
+  quickViewModal.classList.add("open");
 }
 
-function closeModal() {
-  productModal.classList.remove("active");
+function openImageLightbox(imgSrc) {
+  quickViewContent.innerHTML = `
+    <img src="${imgSrc}" alt="رأي عميلة" style="width:100%; border-radius:12px; margin-top:10px;" />
+  `;
+  quickViewModal.classList.add("open");
 }
 
-closeModalBtn.addEventListener("click", closeModal);
-productModal.addEventListener("click", (e) => {
-  if (e.target === productModal) closeModal();
+function closeQuickViewModal() {
+  quickViewModal.classList.remove("open");
+}
+
+document.getElementById("closeQuickView").addEventListener("click", closeQuickViewModal);
+quickViewModal.addEventListener("click", (e) => {
+  if (e.target === quickViewModal) closeQuickViewModal();
 });
 
-// Cart Functions
-const cartDrawer = document.getElementById("cartDrawer");
-const cartOverlay = document.getElementById("cartOverlay");
-const openCartBtn = document.getElementById("openCartBtn");
-const closeCartBtn = document.getElementById("closeCartBtn");
-const cartItemsEl = document.getElementById("cartItems");
-const cartCountEl = document.getElementById("cartCount");
-const cartTotalEl = document.getElementById("cartTotal");
-
-function toggleCart(open) {
-  cartDrawer.classList.toggle("active", open);
-  cartOverlay.classList.toggle("active", open);
-}
-
-openCartBtn.addEventListener("click", () => toggleCart(true));
-closeCartBtn.addEventListener("click", () => toggleCart(false));
-cartOverlay.addEventListener("click", () => toggleCart(false));
-
-function addToCart(id) {
-  const product = findProductById(id);
+// =========================================
+// 5. السلة والواتساب
+// =========================================
+function addToCart(productId) {
+  const product = findProductById(productId);
   if (!product || !product.inStock) return;
 
-  const existing = cart.find((item) => item.id === id);
+  const existing = cart.find((item) => String(item.id) === String(productId));
   if (existing) {
     existing.qty += 1;
   } else {
     cart.push({ ...product, qty: 1 });
   }
   updateCartUI();
-  toggleCart(true);
+  openCartDrawer();
 }
 
-function removeFromCart(id) {
-  cart = cart.filter((item) => item.id !== id);
+function changeQty(productId, delta) {
+  const index = cart.findIndex((item) => String(item.id) === String(productId));
+  if (index === -1) return;
+
+  cart[index].qty += delta;
+  if (cart[index].qty <= 0) {
+    cart.splice(index, 1);
+  }
   updateCartUI();
 }
 
 function updateCartUI() {
-  const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+  const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  cartCountEl.textContent = totalQty;
-  cartTotalEl.textContent = `${totalPrice} ج.م`;
+  document.getElementById("cartBadge").textContent = totalCount;
+  document.getElementById("mobileCartBadge").textContent = totalCount;
+  document.getElementById("cartTotal").textContent = `${totalPrice} ج.م`;
 
+  const container = document.getElementById("cartItemsContainer");
   if (cart.length === 0) {
-    cartItemsEl.innerHTML = `<p class="empty-cart-msg">السلة فارغة حالياً.. اختاري شنطتك المفضلة!</p>`;
+    container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:30px 0;">سلة المشتريات فارغة حالياً</p>`;
     return;
   }
 
-  cartItemsEl.innerHTML = cart
+  container.innerHTML = cart
     .map(
       (item) => `
-    <div class="cart-item">
-      <img src="${item.image}" alt="${item.name}" />
-      <div class="cart-item-info">
-        <h5>${item.name}</h5>
-        <span>${item.price} ج.م × ${item.qty}</span>
+      <div class="cart-item-row">
+        <img src="${item.images[0]}" alt="${item.name}" />
+        <div style="flex:1;">
+          <h4 style="font-size:0.88rem; color:var(--brown-deep);">${item.name}</h4>
+          <span style="font-size:0.8rem; color:var(--text-muted);">${item.price} ج.م × ${item.qty}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <button onclick="changeQty('${item.id}', -1)" style="width:24px; height:24px; border-radius:6px; border:1px solid var(--border-soft); cursor:pointer;">-</button>
+          <span style="font-weight:700; font-size:0.85rem;">${item.qty}</span>
+          <button onclick="changeQty('${item.id}', 1)" style="width:24px; height:24px; border-radius:6px; border:1px solid var(--border-soft); cursor:pointer;">+</button>
+        </div>
       </div>
-      <button class="remove-item" onclick="removeFromCart('${item.id}')" title="حذف">
-        <i class="fas fa-trash"></i>
-      </button>
-    </div>
-  `
+    `
     )
     .join("");
 }
 
-// WhatsApp Checkout
+const cartDrawer = document.getElementById("cartDrawer");
+const cartOverlay = document.getElementById("cartOverlay");
+
+function openCartDrawer() {
+  cartDrawer.classList.add("open");
+  cartOverlay.classList.add("open");
+}
+
+function closeCartDrawer() {
+  cartDrawer.classList.remove("open");
+  cartOverlay.classList.remove("open");
+}
+
+document.getElementById("openCartBtn").addEventListener("click", openCartDrawer);
+document.getElementById("mobileCartBtn").addEventListener("click", openCartDrawer);
+document.getElementById("closeCartBtn").addEventListener("click", closeCartDrawer);
+cartOverlay.addEventListener("click", closeCartDrawer);
+
 document.getElementById("checkoutWaBtn").addEventListener("click", () => {
   if (cart.length === 0) {
-    alert("من فضلك أضيفي شنطة واحدة على الأقل للسلة أولاً!");
+    alert("السلة فارغة! أضيفي شنطة أولاً.");
     return;
   }
 
-  const name = document.getElementById("custName").value.trim();
-  const gov = document.getElementById("custGov").value.trim();
-  const address = document.getElementById("custAddress").value.trim();
+  const name = document.getElementById("customerName").value.trim();
+  const address = document.getElementById("customerAddress").value.trim();
 
-  let msg = `أهلاً Horus handmade ❤️، حابة أعمل أوردر جديد:\n\n`;
-  cart.forEach((item, index) => {
-    msg += `${index + 1}. ${item.name} (الكمية: ${item.qty}) — ${item.price * item.qty} ج.م\n`;
-  });
-
-  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  msg += `\n*الإجمالي:* ${total} ج.م\n`;
-
-  if (name || gov || address) {
-    msg += `\n*بيانات الشحن:*\n`;
-    if (name) msg += `الاسم: ${name}\n`;
-    if (gov) msg += `المحافظة: ${gov}\n`;
-    if (address) msg += `العنوان: ${address}\n`;
+  if (!name || !address) {
+    alert("من فضلك اكتبي الاسم والعنوان لإتمام الطلب.");
+    return;
   }
 
-  const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  window.open(waUrl, "_blank");
+  const itemsText = cart
+    .map((item, idx) => `${idx + 1}. ${item.name} (الكمية: ${item.qty}) - ${item.price * item.qty} ج.م`)
+    .join("\n");
+
+  const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  const message = `أهلاً Horus Handmade ❤️، طلب جديد من الموقع:\n\n👤 الاسم: ${name}\n📍 العنوان: ${address}\n\n🛍️ الطلبات:\n${itemsText}\n\n💰 الإجمالي: ${totalPrice} ج.م`;
+
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
 });
 
-// Mobile Menu
-const mobileMenuBtn = document.getElementById("mobileMenuBtn");
-const navLinks = document.getElementById("navLinks");
-mobileMenuBtn.addEventListener("click", () => {
-  navLinks.classList.toggle("active");
+searchInput.addEventListener("input", (e) => {
+  searchQuery = e.target.value;
+  renderCollections();
 });
 
-// Start App
+document.getElementById("openSearchFocus").addEventListener("click", () => {
+  searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+  searchInput.focus();
+});
+
+document.getElementById("mobileSearchBtn").addEventListener("click", () => {
+  searchInput.scrollIntoView({ behavior: "smooth", block: "center" });
+  searchInput.focus();
+});
+
+updateCartUI();
 loadStoreData();
