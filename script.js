@@ -22,7 +22,7 @@ function getBaseBagName(fullName) {
 }
 
 // =========================================
-// 1. تحميل الأقسام والشنط وتجميع المتشابه منها
+// 1. تحميل الأقسام والشنط وتجاهل أي منتج محذوف أو بدون صور
 // =========================================
 async function loadStoreData() {
   collectionsContainer.innerHTML = `
@@ -46,13 +46,23 @@ async function loadStoreData() {
 
     collectionsData = categories
       .map((cat) => {
-        const rawProducts = products.filter((p) => p.category_id === cat.id);
+        const rawProducts = products.filter(
+          (p) =>
+            p.category_id === cat.id &&
+            p.name &&
+            p.name.trim() !== "" &&
+            Array.isArray(p.images) &&
+            p.images.length > 0 &&
+            p.images[0] &&
+            !p.images[0].includes("placeholder")
+        );
+
         const groupedMap = new Map();
 
         rawProducts.forEach((p) => {
           const baseName = getBaseBagName(p.name);
           const groupKey = `${baseName}_${p.price}`;
-          const pImages = Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/300"];
+          const pImages = p.images.filter((img) => img && img.trim() !== "");
 
           if (!groupedMap.has(groupKey)) {
             groupedMap.set(groupKey, {
@@ -90,7 +100,6 @@ async function loadStoreData() {
           products: mergedProducts
         };
       })
-      // استبعاد أي كوليكشن فاضي تماماً (عشان لا يظهر اسمه ولا وصفه بعد حذف شنطه)
       .filter((col) => col.products && col.products.length > 0);
 
     renderTabs();
@@ -106,7 +115,7 @@ async function loadStoreData() {
 }
 
 // =========================================
-// 2. رسم أزرار الأقسام (التي تحتوي على شنط فقط)
+// 2. رسم أزرار الأقسام
 // =========================================
 function renderTabs() {
   collectionTabsContainer.innerHTML = `<button class="tab-btn ${currentCategory === "all" ? "active" : ""}" data-category="all">الكل</button>`;
@@ -148,7 +157,6 @@ function renderCollections() {
       );
     });
 
-    // لو الكوليكشن فاضي ومفيهوش شنط، متعرضوش خالص ولا تعرض وصفه
     if (!collection.products || filteredProducts.length === 0) return;
 
     const block = document.createElement("section");
@@ -157,7 +165,6 @@ function renderCollections() {
     block.innerHTML = `
       <div class="collection-title-bar">
         <h3>${collection.title}</h3>
-        <span class="collection-subtitle">${collection.subtitle}</span>
       </div>
       <div class="products-grid-fixed">
         ${filteredProducts

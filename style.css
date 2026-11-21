@@ -354,10 +354,10 @@ body {
 }
 
 .collection-subtitle {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  display: none;
 }
 
+/* شبكة مرنة تضم الكروت جنب بعض تلقائي بدون أي فراغات عند الحذف */
 .products-grid-fixed {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -367,13 +367,7 @@ body {
 
 @media (min-width: 600px) {
   .products-grid-fixed {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 992px) {
-  .products-grid-fixed {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 14px;
   }
 }
@@ -548,7 +542,7 @@ body {
 }
 
 /* =========================================
-   قسم صور سكرينات آراء العملاء (كروت صغيرة وأنيقة)
+   قسم صور سكرينات آراء العملاء
 ========================================= */
 .reviews-screenshots-section {
   margin-top: 28px;
@@ -610,7 +604,7 @@ body {
 }
 
 /* =========================================
-   الفوتر الفخم الداكن (بدون أي خلفية بيضاء)
+   الفوتر الفخم الداكن
 ========================================= */
 .main-footer {
   background: var(--brown-footer);
