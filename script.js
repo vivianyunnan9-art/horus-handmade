@@ -44,51 +44,54 @@ async function loadStoreData() {
     const categories = catRes.data || [];
     const products = prodRes.data || [];
 
-    collectionsData = categories.map((cat) => {
-      const rawProducts = products.filter((p) => p.category_id === cat.id);
-      const groupedMap = new Map();
+    collectionsData = categories
+      .map((cat) => {
+        const rawProducts = products.filter((p) => p.category_id === cat.id);
+        const groupedMap = new Map();
 
-      rawProducts.forEach((p) => {
-        const baseName = getBaseBagName(p.name);
-        const groupKey = `${baseName}_${p.price}`;
-        const pImages = Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/300"];
+        rawProducts.forEach((p) => {
+          const baseName = getBaseBagName(p.name);
+          const groupKey = `${baseName}_${p.price}`;
+          const pImages = Array.isArray(p.images) && p.images.length > 0 ? p.images : ["https://via.placeholder.com/300"];
 
-        if (!groupedMap.has(groupKey)) {
-          groupedMap.set(groupKey, {
-            id: p.id,
-            name: baseName,
-            price: Number(p.price),
-            colorsList: p.color ? [p.color] : [],
-            badge: p.badge || "",
-            inStock: p.in_stock,
-            desc: p.description || "",
-            images: [...pImages]
-          });
-        } else {
-          const existing = groupedMap.get(groupKey);
-          pImages.forEach((img) => {
-            if (!existing.images.includes(img)) existing.images.push(img);
-          });
-          if (p.color && !existing.colorsList.includes(p.color)) {
-            existing.colorsList.push(p.color);
+          if (!groupedMap.has(groupKey)) {
+            groupedMap.set(groupKey, {
+              id: p.id,
+              name: baseName,
+              price: Number(p.price),
+              colorsList: p.color ? [p.color] : [],
+              badge: p.badge || "",
+              inStock: p.in_stock,
+              desc: p.description || "",
+              images: [...pImages]
+            });
+          } else {
+            const existing = groupedMap.get(groupKey);
+            pImages.forEach((img) => {
+              if (!existing.images.includes(img)) existing.images.push(img);
+            });
+            if (p.color && !existing.colorsList.includes(p.color)) {
+              existing.colorsList.push(p.color);
+            }
+            if (p.in_stock) existing.inStock = true;
           }
-          if (p.in_stock) existing.inStock = true;
-        }
-      });
+        });
 
-      const mergedProducts = Array.from(groupedMap.values()).map((item) => ({
-        ...item,
-        color: item.colorsList.join(" / ") || "ألوان متعددة"
-      }));
+        const mergedProducts = Array.from(groupedMap.values()).map((item) => ({
+          ...item,
+          color: item.colorsList.join(" / ") || "ألوان متعددة"
+        }));
 
-      return {
-        id: cat.slug,
-        dbId: cat.id,
-        title: cat.title,
-        subtitle: cat.subtitle || "",
-        products: mergedProducts
-      };
-    });
+        return {
+          id: cat.slug,
+          dbId: cat.id,
+          title: cat.title,
+          subtitle: cat.subtitle || "",
+          products: mergedProducts
+        };
+      })
+      // استبعاد أي كوليكشن فاضي تماماً (عشان لا يظهر اسمه ولا وصفه بعد حذف شنطه)
+      .filter((col) => col.products && col.products.length > 0);
 
     renderTabs();
     renderCollections();
@@ -103,11 +106,12 @@ async function loadStoreData() {
 }
 
 // =========================================
-// 2. رسم أزرار الأقسام
+// 2. رسم أزرار الأقسام (التي تحتوي على شنط فقط)
 // =========================================
 function renderTabs() {
   collectionTabsContainer.innerHTML = `<button class="tab-btn ${currentCategory === "all" ? "active" : ""}" data-category="all">الكل</button>`;
   collectionsData.forEach((col) => {
+    if (!col.products || col.products.length === 0) return;
     const btn = document.createElement("button");
     btn.className = `tab-btn ${currentCategory === col.id ? "active" : ""}`;
     btn.dataset.category = col.id;
@@ -134,7 +138,7 @@ function renderCollections() {
     if (currentCategory !== "all" && collection.id !== currentCategory) return;
 
     const q = searchQuery.trim().toLowerCase();
-    const filteredProducts = collection.products.filter((product) => {
+    const filteredProducts = (collection.products || []).filter((product) => {
       if (!q) return true;
       return (
         product.name.toLowerCase().includes(q) ||
@@ -144,7 +148,8 @@ function renderCollections() {
       );
     });
 
-    if (filteredProducts.length === 0) return;
+    // لو الكوليكشن فاضي ومفيهوش شنط، متعرضوش خالص ولا تعرض وصفه
+    if (!collection.products || filteredProducts.length === 0) return;
 
     const block = document.createElement("section");
     block.className = "collection-block";
@@ -249,7 +254,7 @@ function findProductById(id) {
 }
 
 // =========================================
-// 4. المعاينة السريعة (إظهار الصورة كاملة بدون قص)
+// 4. المعاينة السريعة + تكبير سكرينات الآراء
 // =========================================
 const quickViewModal = document.getElementById("quickViewModal");
 const quickViewContent = document.getElementById("quickViewContent");

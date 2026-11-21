@@ -149,9 +149,27 @@ body {
   color: #fff;
 }
 
+/* تنسيق الهيدر والسوشيال ميديا على شاشة الموبايل */
 @media (max-width: 560px) {
+  .header-inner {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+  .brand-logo {
+    order: -1;
+    width: 100%;
+    margin-bottom: 2px;
+  }
   .header-socials {
-    display: none;
+    display: flex;
+    gap: 5px;
+  }
+  .header-socials a {
+    width: 28px;
+    height: 28px;
+    font-size: 0.78rem;
   }
 }
 
@@ -615,7 +633,6 @@ body {
   }
 }
 
-/* اللوجو في الفوتر مكتوب مباشرة من غير خلفية بيضاء */
 .footer-logo-text {
   display: flex;
   flex-direction: column;
