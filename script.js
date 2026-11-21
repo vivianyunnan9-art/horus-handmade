@@ -9,7 +9,7 @@ const collectionsContainer = document.getElementById("collectionsContainer");
 const collectionTabsContainer = document.getElementById("collectionTabs");
 const searchInput = document.getElementById("searchInput");
 
-// استخراج الاسم الأساسي للشنطة لتجميع الألوان المتشابهة في كارت واحد
+// استخراج الاسم الأساسي للشنطة لتجميع الأشكال المتشابهة في كارت واحد
 function getBaseBagName(fullName) {
   let clean = fullName.replace(/\s*\([^)]*\)\s*$/g, "").trim();
   if (clean.includes("صدفة البحر")) {
@@ -69,7 +69,6 @@ async function loadStoreData() {
               id: p.id,
               name: baseName,
               price: Number(p.price),
-              colorsList: p.color ? [p.color] : [],
               badge: p.badge || "",
               inStock: p.in_stock,
               desc: p.description || "",
@@ -80,17 +79,11 @@ async function loadStoreData() {
             pImages.forEach((img) => {
               if (!existing.images.includes(img)) existing.images.push(img);
             });
-            if (p.color && !existing.colorsList.includes(p.color)) {
-              existing.colorsList.push(p.color);
-            }
             if (p.in_stock) existing.inStock = true;
           }
         });
 
-        const mergedProducts = Array.from(groupedMap.values()).map((item) => ({
-          ...item,
-          color: item.colorsList.join(" / ") || "ألوان متعددة"
-        }));
+        const mergedProducts = Array.from(groupedMap.values());
 
         return {
           id: cat.slug,
@@ -151,7 +144,6 @@ function renderCollections() {
       if (!q) return true;
       return (
         product.name.toLowerCase().includes(q) ||
-        product.color.toLowerCase().includes(q) ||
         product.desc.toLowerCase().includes(q) ||
         collection.title.toLowerCase().includes(q)
       );
@@ -201,7 +193,6 @@ function renderCollections() {
                 ${dotsHTML}
                 <div class="product-info">
                   <h4 class="product-name" title="${p.name}">${p.name}</h4>
-                  <span class="product-color-text" title="${p.color}">${p.color}</span>
                   <div class="product-price">${p.price} ج.م</div>
                   <div class="product-actions">
                     <button class="btn-add-cart" onclick="addToCart('${p.id}')" ${!p.inStock ? "disabled" : ""}>
@@ -283,7 +274,6 @@ function openQuickView(productId) {
     <img id="qvMainImg" src="${p.images[0]}" alt="${p.name}" style="width:100%; max-height:360px; object-fit:contain; background:#efe7dc; border-radius:12px; margin:10px 0;" />
     ${p.images.length > 1 ? `<div style="display:flex; gap:8px; overflow-x:auto; margin-bottom:12px;">${thumbsHTML}</div>` : ""}
     <h3 style="color:var(--brown-deep); font-size:1.2rem;">${p.name}</h3>
-    <p style="color:var(--text-muted); font-size:0.85rem; margin:4px 0;">${p.color}</p>
     <p style="font-size:0.9rem; margin:8px 0;">${p.desc}</p>
     <div style="font-size:1.15rem; font-weight:800; color:var(--brown-deep); margin:10px 0;">${p.price} ج.م</div>
     <button class="btn-checkout-wa" onclick="addToCart('${p.id}'); closeQuickViewModal();" ${!p.inStock ? "disabled" : ""}>
@@ -396,10 +386,11 @@ document.getElementById("checkoutWaBtn").addEventListener("click", () => {
   }
 
   const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("customerPhone").value.trim();
   const address = document.getElementById("customerAddress").value.trim();
 
-  if (!name || !address) {
-    alert("من فضلك اكتبي الاسم والعنوان لإتمام الطلب.");
+  if (!name || !phone || !address) {
+    alert("من فضلك اكتبي الاسم ورقم الهاتف والعنوان لإتمام الطلب.");
     return;
   }
 
@@ -409,7 +400,7 @@ document.getElementById("checkoutWaBtn").addEventListener("click", () => {
 
   const totalPrice = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  const message = `أهلاً Horus Handmade ❤️، طلب جديد من الموقع:\n\n👤 الاسم: ${name}\n📍 العنوان: ${address}\n\n🛍️ الطلبات:\n${itemsText}\n\n💰 الإجمالي: ${totalPrice} ج.م`;
+  const message = `أهلاً Horus Handmade ❤️، طلب جديد من الموقع:\n\n👤 الاسم: ${name}\n📞 رقم الهاتف: ${phone}\n📍 العنوان: ${address}\n\n🛍️ الطلبات:\n${itemsText}\n\n💰 الإجمالي: ${totalPrice} ج.م`;
 
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`, "_blank");
 });

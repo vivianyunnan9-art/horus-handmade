@@ -102,10 +102,7 @@ function renderAdminProducts() {
 
   const filtered = products.filter((p) => {
     const matchCat = catFilter === "all" || p.category_id === catFilter;
-    const matchSearch =
-      !query ||
-      p.name.toLowerCase().includes(query) ||
-      (p.color && p.color.toLowerCase().includes(query));
+    const matchSearch = !query || p.name.toLowerCase().includes(query);
     return matchCat && matchSearch;
   });
 
@@ -179,7 +176,6 @@ function openEditProduct(id) {
   document.getElementById("prodName").value = p.name;
   document.getElementById("prodCategory").value = p.category_id;
   document.getElementById("prodPrice").value = p.price;
-  document.getElementById("prodColor").value = p.color || "";
   document.getElementById("prodBadge").value = p.badge || "";
   document.getElementById("prodStock").value = p.in_stock ? "true" : "false";
   document.getElementById("prodDesc").value = p.description || "";
@@ -260,7 +256,6 @@ document.getElementById("productForm").addEventListener("submit", async (e) => {
       name: document.getElementById("prodName").value.trim(),
       category_id: document.getElementById("prodCategory").value,
       price: Number(document.getElementById("prodPrice").value),
-      color: document.getElementById("prodColor").value.trim(),
       badge: document.getElementById("prodBadge").value.trim(),
       in_stock: document.getElementById("prodStock").value === "true",
       description: document.getElementById("prodDesc").value.trim(),
