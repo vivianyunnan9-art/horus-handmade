@@ -153,7 +153,16 @@
           </div>
           <div class="form-group">
             <label>الشارة (Badge)</label>
-            <input type="text" id="prodBadge" placeholder="مثال: الأكثر طلباً / جديد" />
+            <select id="prodBadgeSelect" onchange="toggleCustomBadgeInput()">
+              <option value="">بدون شارة</option>
+              <option value="الأكثر طلباً">الأكثر طلباً</option>
+              <option value="جديد">جديد</option>
+              <option value="قطعة مميزة">قطعة مميزة</option>
+              <option value="إصدار محدود">إصدار محدود</option>
+              <option value="ترشيحنا">ترشيحنا</option>
+              <option value="custom">شارة مخصصة (اكتبي بنفسك)...</option>
+            </select>
+            <input type="text" id="prodBadgeCustom" placeholder="اكتبي نص الشارة..." style="display:none; margin-top:8px;" />
           </div>
         </div>
 

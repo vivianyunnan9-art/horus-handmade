@@ -35,7 +35,7 @@ async function loadStoreData() {
   try {
     const [catRes, prodRes] = await Promise.all([
       supabaseClient.from("categories").select("*").order("sort_order", { ascending: true }),
-      supabaseClient.from("products").select("*").order("created_at", { ascending: false })
+      supabaseClient.from("products").select("*").order("sort_order", { ascending: true }).order("created_at", { ascending: false })
     ]);
 
     if (catRes.error) throw catRes.error;
